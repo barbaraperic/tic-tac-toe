@@ -1,8 +1,4 @@
-// import React from 'react';
-// import ReactDOM from 'react-dom';
 import './index.css';
-// import App from './App';
-// import reportWebVitals from './reportWebVitals';
 
 const appElement = document.getElementById('app')
 const boardElement = document.getElementById('board')
@@ -36,6 +32,14 @@ const createCell = (row: number, col: number, content: Cell) => {
   cell.setAttribute('data-col', col.toString())
   cell.setAttribute('data-content', content)
   cell.classList.add('cell')
+  cell.addEventListener('click', () => {
+    if (boardState[row][col] === '') {
+      boardState[row][col] = currentMove
+      cell.innerText = currentMove;
+      currentMove = currentMove === 'X' ? 'O' : "X"
+      renderBoard();
+    }
+  })
   return cell
 }
 
