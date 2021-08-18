@@ -2,7 +2,6 @@ import './index.css';
 
 const appElement = document.getElementById('app')
 const boardElement = document.getElementById('board')
-const resetButton = document.getElementById('reset')
 
 // initialize variables
 const ROW_COUNT = 3;
@@ -23,6 +22,7 @@ let boardState: TicTacToeBoard = [
 ]
 
 let currentMove: "X" | "O" = "X"
+let winner: Cell | "Draw" = ""
 
 // create cell
 
@@ -33,16 +33,86 @@ const createCell = (row: number, col: number, content: Cell) => {
   cell.setAttribute('data-content', content)
   cell.classList.add('cell')
   cell.addEventListener('click', () => {
+    if(winner) return
     if (boardState[row][col] === '') {
       boardState[row][col] = currentMove
       cell.innerText = currentMove;
       currentMove = currentMove === 'X' ? 'O' : "X"
+      winner = checkBoard()
       renderBoard();
     }
   })
   return cell
 }
 
+type Coordinate = [number, number]
+type Victory = [Coordinate, Coordinate, Coordinate]
+
+const victories: Victory[] = [
+  [
+    [0, 0],
+    [0, 1],
+    [0, 2]
+  ],
+  [
+    [1, 0],
+    [1, 1],
+    [1, 2]
+  ],
+  [
+    [2, 0],
+    [2, 1],
+    [2, 2]
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [2, 0]
+  ],
+  [
+    [0, 1],
+    [1, 1],
+    [2, 1]
+  ],
+  [
+    [0, 2],
+    [1, 2],
+    [2, 2]
+  ],
+  [
+    [0, 0],
+    [1, 1],
+    [2, 2]
+  ],
+  [
+    [0, 2],
+    [1, 1],
+    [2, 0]
+  ],
+]
+
+
+function checkBoard(): Cell | "Draw" {
+  for (let victory of victories) {
+    const cell1 = boardState[victory[0][0]][victory[0][1]]
+    const cell2 = boardState[victory[1][0]][victory[1][1]]
+    const cell3 = boardState[victory[2][0]][victory[2][1]]
+    if (cell1 !== "" && cell1 === cell2 && cell1 === cell3) {
+      return cell1
+    }
+  }
+
+  let isDraw = true;
+  for (let i = 0; i < ROW_COUNT; i++) {
+    for (let j = 0; j < COL_COUNT; j++) {
+      if (boardState[i][j] === '') isDraw = false;
+    }
+   }
+
+   if (isDraw) return 'Draw'
+
+   return ''
+}
 // render board
 
 const renderBoard = () => {
@@ -62,13 +132,14 @@ const renderBoard = () => {
 
   const moveElement = document.createElement('p')
   moveElement.id = 'moveElement'
-  moveElement.innerText = `Current move: ${currentMove}`
+  moveElement.innerText = winner ? `Winner: ${winner}` : `Current move: ${currentMove}`
   moveElement.classList.add('current-move')
-  appElement.insertBefore(moveElement, resetButton)
+  appElement.insertBefore(moveElement, document.getElementById('reset'))
 }
 
 
 const init = () => {
+  const resetButton = document.getElementById('reset')
   if(!resetButton) throw new Error('No reset button')
   resetButton.addEventListener('click', () => {
     boardState = [
@@ -78,6 +149,7 @@ const init = () => {
     ]
 
     currentMove = 'X'
+    winner = ''
     renderBoard();
   })
   renderBoard()
